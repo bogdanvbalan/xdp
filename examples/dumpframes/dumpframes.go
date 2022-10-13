@@ -28,9 +28,11 @@ func main() {
 	var linkName string
 	var queueID int
 	var protocol int64
+	var mode int
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 
+	flag.IntVar(&mode, "mode", 0, "Zerocopy mode")
 	flag.StringVar(&linkName, "linkname", "enp3s0", "The network link on which rebroadcast should run on.")
 	flag.IntVar(&queueID, "queueid", 0, "The ID of the Rx queue to which to attach to on the network link.")
 	flag.Int64Var(&protocol, "ip-proto", 0, "If greater than 0 and less than or equal to 255, limit xdp bpf_redirect_map to packets with the specified IP protocol number.")
@@ -73,6 +75,10 @@ func main() {
 	}
 	defer program.Detach(Ifindex)
 
+	if mode == 1 {
+		xdp.DefaultSocketFlags = 0x4	
+	}
+	
 	// Create and initialize an XDP socket attached to our chosen network
 	// link.
 	xsk, err := xdp.NewSocket(Ifindex, queueID, nil)
